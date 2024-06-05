@@ -7,9 +7,19 @@ import { AuthModule } from './auth/auth.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { HttpExceptionFilter } from './exceptions/http-exception.filter';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('auth.secret'),
+        signOptions: {
+          expiresIn: configService.get<number>('auth.expiresIn', 60),
+        },
+      }),
+    }),
     ConfigModule.forRoot({
       load: [AppConfiguration, AuthConfiguration],
       ignoreEnvFile: false,

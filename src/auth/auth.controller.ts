@@ -1,30 +1,32 @@
-import {
-  Body,
-  Controller,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from './auth.decorator';
 import { firstValueFrom } from 'rxjs';
 import {
+  GET_ALL_USER,
   USER_LOGIN,
   USER_SIGNUP,
 } from 'src/common/serverPetterns/user-server.pettern';
-import { LoginDto } from 'src/common/dto/common.dto';
+import { CommonListDto, LoginDto } from 'src/common/dto/common.dto';
 import { CustomError } from 'src/common/helpers/exceptions';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from 'src/common/interfaces/jwt.interface';
+import { RolesGuard } from './guards/role.guards';
+import { Roles } from 'src/common/decorators/role.decorator';
+import { Role } from 'src/common/constants/role.enum';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(@Inject('AUTH_SERVICE') private client: ClientProxy) {}
+  constructor(
+    @Inject('AUTH_SERVICE') private client: ClientProxy,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  @Post('signup')
   @Public()
+  @Post('signup')
   async signup(@Body() body: CreateUserDto) {
     try {
       return await firstValueFrom(this.client.send(USER_SIGNUP, body));
@@ -32,10 +34,7 @@ export class AuthController {
       if (error) {
         throw error;
       } else {
-        throw new HttpException(
-          error?.message,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw CustomError.UnknownError('something went wrong!!');
       }
     }
   }
@@ -44,24 +43,43 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto) {
     try {
-      // this.client.send(USER_LOGIN, body).subscribe({
-      //   next(value) {
-      //     console.log(value);
-      //   },
-      //   error(err) {
-      //     console.log(err);
-      //   },
-      // });
       const data = await firstValueFrom(this.client.send(USER_LOGIN, body));
+      const token = this.generateAuthToken(data.data);
+      data.data.accessTocken = token;
       console.log(data);
+      return data;
     } catch (error) {
-      console.log(error);
-
       if (error) {
         throw error;
       } else {
         throw CustomError.UnknownError('something went wrong!!');
       }
     }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('get-all')
+  async getAll(@Body() body: CommonListDto) {
+    try {
+      return await firstValueFrom(this.client.send(GET_ALL_USER, body));
+    } catch (error) {
+      if (error) {
+        throw error;
+      } else {
+        throw CustomError.UnknownError('something went wrong!!');
+      }
+    }
+  }
+
+  generateAuthToken(user: any) {
+    const payload: JwtPayload = {
+      id: user.id,
+      role: user.role,
+      email: user.email,
+    };
+    console.log('payload: ', payload);
+    return this.jwtService.sign(payload);
   }
 }
