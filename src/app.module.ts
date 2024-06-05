@@ -8,6 +8,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { HttpExceptionFilter } from './exceptions/http-exception.filter';
 import { JwtModule } from '@nestjs/jwt';
+import { QuestionModule } from './question/question.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
       isGlobal: true,
     }),
     AuthModule,
+    QuestionModule,
   ],
   controllers: [],
   providers: [
