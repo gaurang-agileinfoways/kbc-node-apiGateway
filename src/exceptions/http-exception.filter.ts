@@ -14,8 +14,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const statusCode = exception.statusCode;
-    const message = exception.message;
+    const statusCode = exception.statusCode || exception.getStatus();
+    const message = exception.response.message || exception.message || null;
 
     const body = {
       statusCode,
@@ -24,7 +24,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       endpoint: request.url,
     };
 
-    this.logger.warn(`${statusCode} -- ${message}`);
+    this.logger.warn(`${statusCode} ${message}`);
 
     response.status(statusCode).json(body);
   }
