@@ -45,8 +45,7 @@ export class AuthController {
     try {
       const data = await firstValueFrom(this.client.send(USER_LOGIN, body));
       const token = this.generateAuthToken(data.data);
-      data.data.accessTocken = token;
-      console.log(data);
+      data.data.accessToken = token;
       return data;
     } catch (error) {
       if (error) {
@@ -79,7 +78,6 @@ export class AuthController {
       role: user.role,
       email: user.email,
     };
-    console.log('payload: ', payload);
     return this.jwtService.sign(payload);
   }
 }

@@ -20,6 +20,8 @@ export class QuestionController {
   ) {}
 
   @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('get-all')
   async getAllQustion(@Body() body: CommonListDto) {
     try {

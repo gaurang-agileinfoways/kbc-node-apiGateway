@@ -25,6 +25,8 @@ async function bootstrap() {
   // Apply custom logger
   app.useLogger(new LoggerService());
 
+  app.enableCors({ allowedHeaders: '*', origin: '*' });
+
   //Enable API Params ValidationPipe for all endpoint.
   app.useGlobalPipes(new ValidationPipe());
 

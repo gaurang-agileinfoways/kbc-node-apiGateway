@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import AppConfiguration from './config/app.config';
 import AuthConfiguration from './config/auth.config';
 import { AuthModule } from './auth/auth.module';
@@ -9,6 +8,7 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { HttpExceptionFilter } from './exceptions/http-exception.filter';
 import { JwtModule } from '@nestjs/jwt';
 import { QuestionModule } from './question/question.module';
+import { QuizModule } from './quiz/quiz.module';
 
 @Module({
   imports: [
@@ -28,23 +28,11 @@ import { QuestionModule } from './question/question.module';
     }),
     AuthModule,
     QuestionModule,
+    QuizModule,
   ],
   controllers: [],
   providers: [
     ConfigService,
-    {
-      provide: 'AUTH_SERVICE',
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        return ClientProxyFactory.create({
-          transport: Transport.REDIS,
-          options: {
-            host: configService.get('AUTH_SERVICE_HOST'),
-            port: configService.get('AUTH_SERVICE_PORT'),
-          },
-        });
-      },
-    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
