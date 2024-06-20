@@ -1,9 +1,15 @@
-import { Controller, Inject, Post, Req } from '@nestjs/common';
+import { Body, Controller, Inject, Post, Req } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
+import { Public } from 'src/auth/auth.decorator';
+import { CommonListDto } from 'src/common/dto/common.dto';
 import { CustomError } from 'src/common/helpers/exceptions';
-import { START_QUIZ } from 'src/common/serverPetterns/quiz-server.pettern';
+import {
+  GET_RANKED_USER,
+  MY_QUIZ,
+  START_QUIZ,
+} from 'src/common/serverPetterns/quiz-server.pettern';
 
 @ApiTags('Quiz')
 @Controller()
@@ -18,6 +24,36 @@ export class QuizController {
     try {
       return await firstValueFrom(
         this.quizClient.send(START_QUIZ, request.user),
+      );
+    } catch (error) {
+      if (error) {
+        throw error;
+      } else {
+        throw CustomError.UnknownError('something went wrong!!');
+      }
+    }
+  }
+
+  @Public()
+  @Post('get-ranked-user')
+  async getRankedUser() {
+    try {
+      return await firstValueFrom(this.quizClient.send(GET_RANKED_USER, {}));
+    } catch (error) {
+      if (error) {
+        throw error;
+      } else {
+        throw CustomError.UnknownError('something went wrong!!');
+      }
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post('my-quiz')
+  async myQuiz(@Body() body: CommonListDto, @Req() request) {
+    try {
+      return await firstValueFrom(
+        this.quizClient.send(MY_QUIZ, { body, user: request.user }),
       );
     } catch (error) {
       if (error) {
