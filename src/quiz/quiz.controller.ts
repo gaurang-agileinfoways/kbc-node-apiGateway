@@ -7,6 +7,7 @@ import { CommonListDto } from 'src/common/dto/common.dto';
 import { CustomError } from 'src/common/helpers/exceptions';
 import {
   GET_RANKED_USER,
+  LEADERBOARD,
   MY_QUIZ,
   START_QUIZ,
 } from 'src/common/serverPetterns/quiz-server.pettern';
@@ -55,6 +56,20 @@ export class QuizController {
       return await firstValueFrom(
         this.quizClient.send(MY_QUIZ, { body, user: request.user }),
       );
+    } catch (error) {
+      if (error) {
+        throw error;
+      } else {
+        throw CustomError.UnknownError('something went wrong!!');
+      }
+    }
+  }
+
+  @Public()
+  @Post('leaderboard')
+  async leaderboard(@Body() body: CommonListDto) {
+    try {
+      return await firstValueFrom(this.quizClient.send(LEADERBOARD, body));
     } catch (error) {
       if (error) {
         throw error;
