@@ -1,9 +1,0 @@
-services:
-  server:
-    container_name: api-gateway
-    build:
-      context: .
-    environment:
-      env_file: '.env'
-    ports:
-      - 3000:3000

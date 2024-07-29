@@ -39,7 +39,7 @@ export class QuizController {
   @Post('get-ranked-user')
   async getRankedUser() {
     try {
-      return await firstValueFrom(this.quizClient.send(GET_RANKED_USER, {}));
+      return this.quizClient.send(GET_RANKED_USER, {});
     } catch (error) {
       if (error) {
         throw error;

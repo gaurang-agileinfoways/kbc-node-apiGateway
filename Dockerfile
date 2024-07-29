@@ -1,10 +1,11 @@
 FROM node:current
-WORKDIR /usr/src/app
+WORKDIR /usr/src/app/
 
-COPY package*.json /usr/src/app/
+COPY api-gateway/package*.json /usr/src/app/
+
 RUN npm install
 
-COPY . .
+COPY api-gateway/. .
 
 RUN npm run build
 
