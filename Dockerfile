@@ -9,6 +9,6 @@ COPY api-gateway/. .
 
 RUN npm run build
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:prod"]
 
 EXPOSE 3000
